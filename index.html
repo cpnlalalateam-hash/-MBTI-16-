@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐶 犬タイプ性格診断（MBTI 16タイプ）</title>
+<style>
+body{
+  font-family:'Noto Sans JP',sans-serif;
+  background:#fff8f0;
+  color:#333;
+  margin:0;
+  padding:0;
+  text-align:center;
+}
+h1{
+  background:#ffcb74;
+  color:#4a3000;
+  padding:15px;
+  margin:0;
+  font-size:1.6em;
+  letter-spacing:1px;
+}
+section{
+  padding:20px;
+  max-width:700px;
+  margin:auto;
+}
+.question{
+  background:#fff;
+  margin:15px 0;
+  padding:15px;
+  border-radius:12px;
+  box-shadow:0 3px 10px rgba(0,0,0,0.1);
+  text-align:left;
+}
+label{display:block;margin:8px 0;}
+button{
+  background:#ff9d00;
+  color:#fff;
+  border:none;
+  padding:12px 24px;
+  border-radius:8px;
+  font-size:1em;
+  cursor:pointer;
+  margin:12px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.15);
+}
+button:hover{background:#ffb733;}
+img.dog{
+  width:100%;
+  max-width:420px;
+  height:auto;
+  border-radius:16px;
+  display:block;
+  margin:16px auto;
+  box-shadow:0 6px 18px rgba(0,0,0,0.15);
+  object-fit:cover;
+}
+#result{display:none;}
+#affinity-section{display:none;margin-top:20px;}
+input[type=text]{padding:6px;border-radius:5px;border:1px solid #ccc;}
+.share-buttons a{
+  display:inline-block;
+  margin:8px;
+  text-decoration:none;
+  background:#1da1f2;
+  color:#fff;
+  padding:8px 14px;
+  border-radius:6px;
+}
+.share-buttons a:hover{opacity:0.8;}
+</style>
+</head>
+<body>
+<h1>🐶 犬タイプ性格診断（MBTI 16タイプ）</h1>
+
+<section id="quiz">
+  <p>4つの質問に答えて、あなたの「魂の犬種」を診断します！</p>
+
+  <div class="question">
+    <p><strong>Q1. 休日はどちらかというと…</strong></p>
+    <label><input type="radio" name="q1" value="E"> 人と一緒に過ごすのが好き（E）</label>
+    <label><input type="radio" name="q1" value="I"> 一人でのんびり過ごしたい（I）</label>
+  </div>
+
+  <div class="question">
+    <p><strong>Q2. 新しいことを始めるときは？</strong></p>
+    <label><input type="radio" name="q2" value="S"> 現実的に計画を立てて行動する（S）</label>
+    <label><input type="radio" name="q2" value="N"> 直感を信じてまず動いてみる（N）</label>
+  </div>
+
+  <div class="question">
+    <p><strong>Q3. 人と話すとき、どちらを重視する？</strong></p>
+    <label><input type="radio" name="q3" value="T"> 論理的で正しいこと（T）</label>
+    <label><input type="radio" name="q3" value="F"> 相手の気持ちや共感（F）</label>
+  </div>
+
+  <div class="question">
+    <p><strong>Q4. 予定の立て方は？</strong></p>
+    <label><input type="radio" name="q4" value="J"> きちんと計画して進めたい（J）</label>
+    <label><input type="radio" name="q4" value="P"> 状況に合わせて柔軟に動きたい（P）</label>
+  </div>
+
+  <p><input type="text" id="user-name" placeholder="名前（任意）"></p>
+  <button onclick="diagnose()">診断する🐾</button>
+</section>
+
+<section id="result">
+  <h2 id="diagnosed-name"></h2>
+  <img id="dog-img" class="dog" src="" alt="">
+  <h3 id="dog-catch"></h3>
+  <p id="dog-detail"></p>
+  <p><strong>あなたのタイプコード：</strong><span id="my-type-code"></span></p>
+  <button id="btn-reset" onclick="onReset()">もう一度診断する🔁</button>
+
+  <div class="share-buttons">
+    <a id="btn-share-x" target="_blank">Xでシェア</a>
+    <a id="btn-download-image" download>画像をダウンロード</a>
+  </div>
+
+  <div id="affinity-section">
+    <h3>🐾 相性診断</h3>
+    <p>相手のタイプコードを入力（例：ENFP）</p>
+    <input type="text" id="partner-code" placeholder="例: INFP">
+    <button onclick="checkAffinity()">相性を占う💞</button>
+    <div id="affinity-result-text" style="margin-top:10px;"></div>
+  </div>
+</section>
+
+<script>
+const DOG_TYPES={
+"ISTJ":{name:"ドーベルマン",catch:"規律を重んじる論理的な守護犬",detail:"忠誠心と論理性の塊。信頼した相手を生涯守り抜く。",img:"https://cdn.pixabay.com/photo/2016/03/27/18/10/doberman-1283814_1920.jpg",affinity:["ENFP","ISFP","ESTP"],conflict:["INFP","ENFJ"]},
+"ESTJ":{name:"ジャーマン・シェパード",catch:"群れを率いる統率犬",detail:"現実的で頼もしいリーダー。秩序と責任を重んじる。",img:"https://cdn.pixabay.com/photo/2019/08/23/19/45/german-shepherd-4425230_1920.jpg",affinity:["ISFP","INFP","ESTJ"],conflict:["INFJ","ENTP"]},
+"ISTP":{name:"ジャック・ラッセル・テリア",catch:"瞬発力と好奇心の独立者",detail:"ルールに縛られず、現場対応力で世界を渡る冒険家。",img:"https://cdn.pixabay.com/photo/2017/02/15/12/12/jack-russell-2063951_1920.jpg",affinity:["ESFJ","ISTP","ENTP"],conflict:["ENFJ","INFJ"]},
+"ESTP":{name:"ボクサー",catch:"行動第一のムードメーカー",detail:"瞬発力と勢いで周囲を引っ張る、エネルギッシュな犬。",img:"https://cdn.pixabay.com/photo/2015/03/26/09/41/boxer-690566_1920.jpg",affinity:["ISTJ","ISFP","ESFP"],conflict:["INFP","INTJ"]},
+"INFP":{name:"チワワ",catch:"静かに世界を想う理想の詩人",detail:"小さな体に大きな理想を秘める、ロマンチスト犬。",img:"https://cdn.pixabay.com/photo/2015/02/05/12/09/chihuahua-624924_1920.jpg",affinity:["ENFJ","ENTP","INFP"],conflict:["ESTJ","ESTP"]},
+"ENFP":{name:"ゴールデン・レトリバー",catch:"無限の愛を配る太陽犬",detail:"人懐っこく前向き。群れに活気と笑顔をもたらす存在。",img:"https://cdn.pixabay.com/photo/2017/06/20/19/22/dog-2424329_1920.jpg",affinity:["ISTJ","INFJ","ENTJ"],conflict:["ISTP","ESTP"]},
+"INFJ":{name:"柴犬",catch:"静かな洞察力の持ち主",detail:"誠実で信念に生きる。心を許した相手にだけ尻尾を振る。",img:"https://cdn.pixabay.com/photo/2020/03/08/17/37/shiba-4912505_1920.jpg",affinity:["ENFP","ENTP","INFJ"],conflict:["ESTJ","ESTP"]},
+"ENFJ":{name:"ラブラドール・レトリバー",catch:"群れを導く調和の番犬",detail:"優しさと包容力で、周囲をまとめるリーダータイプ。",img:"https://cdn.pixabay.com/photo/2017/09/25/13/12/labrador-2785074_1920.jpg",affinity:["INFP","INTJ","ENFJ"],conflict:["ISTP","ESTP"]},
+"INTJ":{name:"ロットワイラー",catch:"孤高の戦略家",detail:"感情に流されず未来を見据える、知的な番犬。",img:"https://cdn.pixabay.com/photo/2016/03/27/18/10/rottweiler-1283813_1920.jpg",affinity:["ENFJ","ENTP","INFP"],conflict:["ESFP","ESTP"]},
+"ENTJ":{name:"ワイマラナー",catch:"目標達成の鬼",detail:"効率と成果を追求する指揮官。強い意志で群れを導く。",img:"https://cdn.pixabay.com/photo/2018/03/11/20/38/weimaraner-3215989_1920.jpg",affinity:["INFP","INTJ","ENTJ"],conflict:["ISFP","ESFP"]},
+"INTP":{name:"アフガン・ハウンド",catch:"知識の探求者",detail:"美と理論を愛する思索犬。自分の世界に深く潜る。",img:"https://cdn.pixabay.com/photo/2014/12/11/17/09/afghan-hound-564008_1920.jpg",affinity:["ESFJ","ENTP","INTP"],conflict:["ESTJ","ESFP"]},
+"ENTP":{name:"プードル",catch:"議論を楽しむ知的革命犬",detail:"独創的で好奇心旺盛。常に新しい遊びを生み出す。",img:"https://cdn.pixabay.com/photo/2015/03/26/09/41/poodle-690551_1920.jpg",affinity:["ISTJ","INFJ","ENFP"],conflict:["ISFJ","ESFJ"]},
+"ISFJ":{name:"キャバリア",catch:"群れの調和を守る献身犬",detail:"温厚で面倒見が良く、皆の心を癒やす存在。",img:"https://cdn.pixabay.com/photo/2015/03/26/09/41/cavalier-690566_1920.jpg",affinity:["ESFP","ISTP","ISFJ"],conflict:["ENTP","INTJ"]},
+"ESFJ":{name:"マルチーズ",catch:"社交的な女王犬",detail:"愛され上手で誰とでも仲良くなれる社交界のスター。",img:"https://cdn.pixabay.com/photo/2016/02/19/10/00/maltese-1209621_1920.jpg",affinity:["ISTP","INTP","ESFP"],conflict:["ENTP","INTJ"]},
+"ISFP":{name:"パグ",catch:"マイペースな芸術家犬",detail:"五感と感性を信じて自由に生きるアーティスト。",img:"https://cdn.pixabay.com/photo/2016/03/27/18/10/pug-1283815_1920.jpg",affinity:["ESTJ","ENTJ","ISFP"],conflict:["ENFJ","INFJ"]},
+"ESFP":{name:"ダルメシアン",catch:"注目を集めるスター犬",detail:"楽しいことが大好き。場の雰囲気を明るくする天才。",img:"https://cdn.pixabay.com/photo/2016/02/19/10/00/dalmatian-1209621_1920.jpg",affinity:["ISTP","ISFJ","ESTP"],conflict:["INTJ","ENTJ"]}
+};
+
+function diagnose(){
+ const answers={E:0,I:0,S:0,N:0,T:0,F:0,J:0,P:0};
+ for(let i=1;i<=4;i++){
+   const c=document.querySelector(`input[name="q${i}"]:checked`);
+   if(c){answers[c.value]++;}else{
+     alert("⚠️ 全ての質問に答えてください。");return;
+   }
+ }
+ const code=`${answers.E>=answers.I?'E':'I'}${answers.S>=answers.N?'S':'N'}${answers.T>=answers.F?'T':'F'}${answers.J>=answers.P?'J':'P'}`;
+ const type=DOG_TYPES[code];
+ const user=document.getElementById("user-name").value||"あなた";
+ document.getElementById("diagnosed-name").textContent=`${user}さんの魂の犬種は【${type.name}】`;
+ document.getElementById("dog-img").src=type.img;
+ document.getElementById("dog-img").alt=type.name;
+ document.getElementById("dog-catch").textContent=type.catch;
+ document.getElementById("dog-detail").textContent=type.detail;
+ document.getElementById("my-type-code").textContent=code;
+ document.getElementById("quiz").style.display="none";
+ document.getElementById("result").style.display="block";
+ document.getElementById("affinity-section").style.display="block";
+ localStorage.setItem("myDogType",code);
+
+ const shareText=encodeURIComponent(`${user}さんの犬タイプは【${type.name}】(${code}) 🐶`);
+ document.getElementById("btn-share-x").href=`https://twitter.com/intent/tweet?text=${shareText}&url=${encodeURIComponent(location.href)}`;
+ const dl=document.getElementById("btn-download-image");
+ dl.href=type.img;
+ dl.download=`${code}_${type.name}.jpg`;
+}
+
+function checkAffinity(){
+ const myCode=localStorage.getItem("myDogType");
+ const partnerCode=document.getElementById("partner-code").value.toUpperCase().trim();
+ const resultText=document.getElementById("affinity-result-text");
+ if(!DOG_TYPES[partnerCode]){resultText.innerHTML="<span style='color:red;'>⚠️ 正しいタイプコードを入力してください。</span>";return;}
+ const myType=DOG_TYPES[myCode];
+ const partnerType=DOG_TYPES[partnerCode];
+ let msg="";
+ if(myType.affinity.includes(partnerCode)){msg="<span style='color:#d04040;'>奇跡のコンビネーション！</span><br>お互いの長所を伸ばす理想の関係。";}
+ else if(myType.conflict.includes(partnerCode)){msg="<span style='color:#333;'>激突のコントラスト...</span><br>価値観が真逆で衝突しやすい関係。";}
+ else if(myCode===partnerCode){msg="<span style='color:#008000;'>共鳴する盟友！</span><br>同じ魂を持つ理解者。";}
+ else{msg="<span style='color:#4682b4;'>穏やかな連携。</span><br>無理なく付き合える関係。";}
+ resultText.innerHTML=`<strong>${myType.name}</strong> と <strong>${partnerCode} (${partnerType.name})</strong> の相性：<br>${msg}`;
+}
+
+function onReset(){
+ document.getElementById("quiz").style.display="block";
+ document.getElementById("result").style.display="none";
+ document.getElementById("affinity-section").style.display="none";
+ document.querySelectorAll("input[type=radio]").forEach(r=>r.checked=false);
+ document.getElementById("user-name").value="";
+ document.getElementById("partner-code").value="";
+ document.getElementById("affinity-result-text").innerHTML="";
+ localStorage.removeItem("myDogType");
+}
+
+document.addEventListener("DOMContentLoaded",()=>{onReset();});
+</script>
+</body>
+</html>
